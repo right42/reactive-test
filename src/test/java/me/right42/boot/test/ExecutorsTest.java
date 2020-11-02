@@ -2,6 +2,8 @@ package me.right42.boot.test;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+import java.util.Arrays;
 import java.util.concurrent.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,7 +32,7 @@ public class ExecutorsTest {
 
     @Test
     void callable() throws ExecutionException, InterruptedException {
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        ExecutorService executorService = getFixedThreadPool(1);
 
         Callable<Integer> callable = () -> {
             TimeUnit.SECONDS.sleep(3);
@@ -50,6 +52,43 @@ public class ExecutorsTest {
             submit2.get(1, TimeUnit.SECONDS);
         });
     }
+
+    @Test
+    void invokeAll() throws InterruptedException {
+        ExecutorService fixedThreadPool = getFixedThreadPool(2);
+
+        List<Callable<Integer>> callables = Arrays.asList(
+            () -> {
+                System.out.println("task1");
+                TimeUnit.SECONDS.sleep(1);
+                return 1234;
+            },
+            () -> {
+                System.out.println("task2");
+                TimeUnit.SECONDS.sleep(2);
+                return 4567;
+            }
+        );
+
+        fixedThreadPool.invokeAll(callables)
+            .stream()
+            .map(integerFuture -> {
+                try {
+                    return integerFuture.get();
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
+            })
+            .forEach(System.out::println);
+        ;
+        ;
+    }
+
+
+    private ExecutorService getFixedThreadPool(int size) {
+        return Executors.newFixedThreadPool(size);
+    }
+
 
     private void close(ExecutorService executorService){
 

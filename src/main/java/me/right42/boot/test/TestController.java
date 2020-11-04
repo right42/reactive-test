@@ -10,10 +10,17 @@ public class TestController {
 
     private int count = 0;
 
+    private void addCountSync(int count){
+        synchronized (this){
+//            System.out.println(this.count);
+            this.count += count;
+        }
+    }
+
     @GetMapping("/add-count")
     public Response<Integer> addCount(){
-        System.out.println(count);
-        return new Response<>(count++);
+        addCountSync(1);
+        return new Response<>(count);
     }
 
     @GetMapping("/counts")
